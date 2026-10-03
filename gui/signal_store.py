@@ -2,8 +2,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal as QtSignal
 
-from dsp import DiscreteSignal
-
+from dsp.discrete_signal import DiscreteSignal
 
 class SignalStore(QObject):
     changed = QtSignal()

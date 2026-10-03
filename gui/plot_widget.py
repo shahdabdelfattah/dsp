@@ -5,7 +5,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
-from dsp import DiscreteSignal
+from dsp.discrete_signal import DiscreteSignal
 
 INPUT_COLOR = "#1f77b4"
 RESULT_COLOR = "#d62728"
