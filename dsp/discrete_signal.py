@@ -37,6 +37,7 @@ class DiscreteSignal:
         self._values = val
         self.name = name
 
+
     def value_at(self, idx):
         if not np.isfinite(idx):
             raise ValueError("index must be finite")
@@ -53,8 +54,10 @@ class DiscreteSignal:
         else:
             return 0.0
 
+
     def __repr__(self):
         return f"DiscreteSignal(name = '{self.name}', n = {self.start}..{self.end}, samples = {len(self)})"
+
 
     @property
     def indices(self):

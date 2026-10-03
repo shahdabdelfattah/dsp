@@ -1,9 +1,6 @@
-
 from __future__ import annotations
-
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTabWidget
-
 from gui.panels import PANELS
 from gui.signal_store import SignalStore
 
@@ -20,11 +17,10 @@ Signal files are plain text:
 Indices are integers (they may be negative); values may be decimals.
 """
 
-
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("DSP Task 1")
+        self.setWindowTitle("DSP")
         self.resize(1200, 760)
 
         self.store = SignalStore()
@@ -53,7 +49,7 @@ class MainWindow(QMainWindow):
         about = QAction("&About", self)
         about.triggered.connect(
             lambda: QMessageBox.about(
-                self, "About", "DSP Toolkit\nDigital Signal Processing course project."
+                self, "About", "DSP \nDigital Signal Processing course project."
             )
         )
         help_menu.addAction(fmt)

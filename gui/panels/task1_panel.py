@@ -18,11 +18,12 @@ from gui.signal_store import SignalStore
 
 
 class Task1Panel(TaskPanel):
-    title = "Task 1 \u2013 Signal basics"
+    title = "Task 1"
 
     def __init__(self, store: SignalStore, parent=None) -> None:
         super().__init__(store, parent)
         self._publishing = False  
+        self._shown: tuple[DiscreteSignal, ...] = ()
         self._build_ui()
         self.store.changed.connect(self._on_store_changed)
         self._refresh_views()
@@ -48,7 +49,8 @@ class Task1Panel(TaskPanel):
         root.addWidget(splitter)
 
     def _build_signals_box(self) -> QGroupBox:
-        box = QGroupBox("Signals  (select one or more)")
+        box = QGroupBox("Signals (select one or more)")
+        box.setStyleSheet("QGroupBox { font-weight: bold; }")
         layout = QVBoxLayout(box)
 
         self.list = QListWidget()
@@ -71,44 +73,63 @@ class Task1Panel(TaskPanel):
         layout.addLayout(row)
         return box
 
+    @staticmethod
+    def _section_label(text: str) -> QLabel:
+        label = QLabel(text)
+        label.setStyleSheet("font-weight: bold;")
+        return label
+
     def _build_operations_box(self) -> QGroupBox:
         box = QGroupBox("Operations")
-        form = QFormLayout(box)
+        box.setStyleSheet("QGroupBox { font-weight: bold; }")
+        layout = QVBoxLayout(box)
 
-        # Add
+        # Addition
+        layout.addWidget(self._section_label("Addition"))
         add_btn = QPushButton("Add selected signals")
         add_btn.setToolTip("Sums two or more selected signals")
         add_btn.clicked.connect(self._on_add)
-        form.addRow(add_btn)
+        layout.addWidget(add_btn)
+        layout.addSpacing(8)
 
-        # Subtract
+        # Subtraction
+        layout.addWidget(self._section_label("Subtraction"))
         self.combo_a, self.combo_b = QComboBox(), QComboBox()
         sub_row = QHBoxLayout()
         sub_row.addWidget(self.combo_a, 1)
-        sub_row.addWidget(QLabel("\u2212"))
         sub_row.addWidget(self.combo_b, 1)
-        form.addRow("Subtract", sub_row)
+        layout.addLayout(sub_row)
         sub_btn = QPushButton("Compute A \u2212 B")
         sub_btn.clicked.connect(self._on_subtract)
-        form.addRow(sub_btn)
+        layout.addWidget(sub_btn)
+        layout.addSpacing(8)
 
-        # Multiply
+        # Multiplication
+        layout.addWidget(self._section_label("Multiplication"))
         self.constant = QDoubleSpinBox()
         self.constant.setRange(-1e6, 1e6)
         self.constant.setDecimals(4)
         self.constant.setSingleStep(0.5)
         self.constant.setValue(2.0)
-        form.addRow("Constant c", self.constant)
+        const_row = QHBoxLayout()
+        const_row.addWidget(QLabel("Constant c"))
+        const_row.addWidget(self.constant, 1)
+        layout.addLayout(const_row)
         mul_btn = QPushButton("Multiply selected by c")
         mul_btn.setToolTip("|c| > 1 amplifies, |c| < 1 reduces, c < 0 flips the sign")
         mul_btn.clicked.connect(self._on_multiply)
-        form.addRow(mul_btn)
+        layout.addWidget(mul_btn)
+        layout.addSpacing(8)
 
-        # Delay / advance
+        # Shifting
+        layout.addWidget(self._section_label("Shifting"))
         self.k = QSpinBox()
         self.k.setRange(0, 100000)
         self.k.setValue(1)
-        form.addRow("Shift k (steps)", self.k)
+        k_row = QHBoxLayout()
+        k_row.addWidget(QLabel("Shift k (steps)"))
+        k_row.addWidget(self.k, 1)
+        layout.addLayout(k_row)
         shift_row = QHBoxLayout()
         delay_btn = QPushButton("Delay  x(n\u2212k)")
         delay_btn.clicked.connect(self._on_delay)
@@ -116,18 +137,17 @@ class Task1Panel(TaskPanel):
         advance_btn.clicked.connect(self._on_advance)
         shift_row.addWidget(delay_btn)
         shift_row.addWidget(advance_btn)
-        form.addRow(shift_row)
+        layout.addLayout(shift_row)
+        layout.addSpacing(8)
 
-        # Fold
+        # Reverse
+        layout.addWidget(self._section_label("Reverse"))
         fold_btn = QPushButton("Fold  x(\u2212n)")
         fold_btn.clicked.connect(self._on_fold)
-        form.addRow(fold_btn)
+        layout.addWidget(fold_btn)
 
-        hint = QLabel("Results are added to the list, so you can keep chaining operations.")
-        hint.setWordWrap(True)
-        hint.setStyleSheet("color: gray;")
-        form.addRow(hint)
         return box
+
 
     @staticmethod
     def _describe(sig: DiscreteSignal) -> str:
@@ -135,15 +155,15 @@ class Task1Panel(TaskPanel):
 
     def _selected(self) -> list[DiscreteSignal]:
         rows = sorted(i.row() for i in self.list.selectedIndexes())
-        signals = self.store.signals
-        return [signals[r] for r in rows]
+        return [self._shown[r] for r in rows]
 
     def _refresh_views(self, keep: list[DiscreteSignal] = ()) -> None:
         prev_a, prev_b = self.combo_a.currentIndex(), self.combo_b.currentIndex()
 
+        self._shown = self.store.signals
         self.list.blockSignals(True)
         self.list.clear()
-        for sig in self.store.signals:
+        for sig in self._shown:
             item = QListWidgetItem(self._describe(sig))
             self.list.addItem(item)
             if any(sig is k for k in keep):
@@ -161,7 +181,9 @@ class Task1Panel(TaskPanel):
             self.combo_b.setCurrentIndex((self.combo_a.currentIndex() + 1) % len(names))
 
     def _on_store_changed(self) -> None:
-        self._refresh_views(keep=self._selected())
+        alive = self.store.signals
+        keep = [s for s in self._selected() if any(s is t for t in alive)]
+        self._refresh_views(keep=keep)
         if not self._publishing:
             self._plot_selection()
 
@@ -246,7 +268,7 @@ class Task1Panel(TaskPanel):
             self.store.remove(selected)
 
     def _on_rename(self, item: QListWidgetItem) -> None:
-        sig = self.store.signals[self.list.row(item)]
+        sig = self._shown[self.list.row(item)]
         new_name, ok = QInputDialog.getText(self, "Rename signal", "New name:", text=sig.name)
         if ok:
             try:

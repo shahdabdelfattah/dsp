@@ -3,7 +3,6 @@ from dsp.discrete_signal import DiscreteSignal
 
 
 def _result_name(operation: str, signals: list[DiscreteSignal]) -> str:
-
     names = [signal.name for signal in signals]
     return f"{operation}({', '.join(names)})"
 
@@ -35,14 +34,8 @@ def add(signals: list[DiscreteSignal]) -> DiscreteSignal:
     )
 
 
-def subtract(
-    signal_a: DiscreteSignal,
-    signal_b: DiscreteSignal,
-) -> DiscreteSignal:
-
-    all_indices = sorted(
-        set(signal_a.indices) | set(signal_b.indices)
-    )
+def subtract(signal_a: DiscreteSignal, signal_b: DiscreteSignal) -> DiscreteSignal:
+    all_indices = sorted(set(signal_a.indices) | set(signal_b.indices))
 
     result_values = [
         signal_a.value_at(index) - signal_b.value_at(index)
@@ -56,13 +49,8 @@ def subtract(
     )
 
 
-def multiply(
-    signal: DiscreteSignal,
-    constant: float,
-) -> DiscreteSignal:
-
+def multiply(signal: DiscreteSignal, constant: float) -> DiscreteSignal:
     constant = float(constant)
-
     result_values = signal.values * constant
 
     return DiscreteSignal(
@@ -72,13 +60,8 @@ def multiply(
     )
 
 
-def delay(
-    signal: DiscreteSignal,
-    k: int,
-) -> DiscreteSignal:
-
+def delay(signal: DiscreteSignal, k: int) -> DiscreteSignal:
     k = int(k)
-
     if k < 0:
         raise ValueError("Delay k must be non-negative.")
 
@@ -91,12 +74,8 @@ def delay(
     )
 
 
-def advance(
-    signal: DiscreteSignal,
-    k: int,
-) -> DiscreteSignal:
+def advance(signal: DiscreteSignal, k: int) -> DiscreteSignal:
     k = int(k)
-
     if k < 0:
         raise ValueError("Advance k must be non-negative.")
 
@@ -111,6 +90,7 @@ def advance(
 
 def fold(signal: DiscreteSignal) -> DiscreteSignal:
     new_indices = -signal.indices
+    
     return DiscreteSignal(
         new_indices,
         signal.values,

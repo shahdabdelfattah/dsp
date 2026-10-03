@@ -4,7 +4,6 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolb
 from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 from PySide6.QtWidgets import QVBoxLayout, QWidget
-
 from dsp.discrete_signal import DiscreteSignal
 
 INPUT_COLOR = "#1f77b4"
@@ -17,13 +16,20 @@ class PlotItem:
     signal: DiscreteSignal
     is_result: bool = False
 
+class SignalToolbar(NavigationToolbar2QT):
+    toolitems = [
+        item for item in NavigationToolbar2QT.toolitems
+        if item[0] in ("Back", "Forward", "Pan", "Zoom", "Save")
+    ]
 
 class SignalPlot(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.figure = Figure(layout="constrained")
         self.canvas = FigureCanvasQTAgg(self.figure)
-        self.toolbar = NavigationToolbar2QT(self.canvas, self)
+
+        
+        self.toolbar = SignalToolbar(self.canvas, self)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

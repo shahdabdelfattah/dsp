@@ -1,7 +1,5 @@
 from pathlib import Path
-
 from dsp.discrete_signal import DiscreteSignal
-
 
 def input_signal(filepath):
     filepath = Path(filepath)
