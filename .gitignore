@@ -1,5 +1,7 @@
 .venv
-tests/
 pytest.ini
 __pycache__/
 gui_1/
+.idea/
+.pytest_cache/
+test_discrete_signal.py 
