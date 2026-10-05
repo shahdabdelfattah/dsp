@@ -27,11 +27,7 @@ def add(signals: list[DiscreteSignal]) -> DiscreteSignal:
         for index in all_indices
     ]
 
-    return DiscreteSignal(
-        all_indices,
-        result_values,
-        name=_result_name("Add", signals),
-    )
+    return DiscreteSignal(all_indices, result_values, name=_result_name("Add", signals))
 
 
 def subtract(signal_a: DiscreteSignal, signal_b: DiscreteSignal) -> DiscreteSignal:
@@ -42,22 +38,14 @@ def subtract(signal_a: DiscreteSignal, signal_b: DiscreteSignal) -> DiscreteSign
         for index in all_indices
     ]
 
-    return DiscreteSignal(
-        all_indices,
-        result_values,
-        name=f"{signal_a.name} - {signal_b.name}",
-    )
+    return DiscreteSignal(all_indices, result_values, name=f"{signal_a.name} - {signal_b.name}")
 
 
 def multiply(signal: DiscreteSignal, constant: float) -> DiscreteSignal:
     constant = float(constant)
     result_values = signal.values * constant
 
-    return DiscreteSignal(
-        signal.indices,
-        result_values,
-        name=f"{constant:g}*{signal.name}",
-    )
+    return DiscreteSignal(signal.indices, result_values, name=f"{constant:g}*{signal.name}")
 
 
 def delay(signal: DiscreteSignal, k: int) -> DiscreteSignal:
@@ -67,11 +55,7 @@ def delay(signal: DiscreteSignal, k: int) -> DiscreteSignal:
 
     new_indices = signal.indices + k
 
-    return DiscreteSignal(
-        new_indices,
-        signal.values,
-        name=f"Delay({signal.name}, {k})",
-    )
+    return DiscreteSignal(new_indices, signal.values, name=f"Delay({signal.name}, {k})")
 
 
 def advance(signal: DiscreteSignal, k: int) -> DiscreteSignal:
@@ -81,18 +65,10 @@ def advance(signal: DiscreteSignal, k: int) -> DiscreteSignal:
 
     new_indices = signal.indices - k
 
-    return DiscreteSignal(
-        new_indices,
-        signal.values,
-        name=f"Advance({signal.name}, {k})",
-    )
+    return DiscreteSignal(new_indices, signal.values, name=f"Advance({signal.name}, {k})")
 
 
 def fold(signal: DiscreteSignal) -> DiscreteSignal:
     new_indices = -signal.indices
     
-    return DiscreteSignal(
-        new_indices,
-        signal.values,
-        name=f"Fold({signal.name})",
-    )
+    return DiscreteSignal(new_indices, signal.values, name=f"Fold({signal.name})")
