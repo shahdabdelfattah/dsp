@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from matplotlib.pylab import indices
 from dsp.discrete_signal import DiscreteSignal
 
 def input_signal(filepath):
@@ -63,8 +65,7 @@ def input_signal(filepath):
     if not indices:
         raise ValueError("Signal contains no samples")
 
-    return DiscreteSignal(indices, values)
-
+    return DiscreteSignal(indices, values, name=filepath.stem)
 
 def output_signal(signal, filepath):
     filepath = Path(filepath)
