@@ -27,6 +27,15 @@ def test_sample_count():
     assert len(signal) == 20
 
 
+def test_continuous_wave_preserves_generation_parameters():
+    signal = generate_wave("sine", 2, 0.3, 1, 10, duration=2)
+    times = np.array([0.0, 0.25, 1.0, 2.0])
+    expected = 2 * np.sin(2 * np.pi * times + 0.3)
+
+    assert signal.continuous_wave.duration == 2
+    assert np.allclose(signal.continuous_wave.values_at(times), expected)
+
+
 def test_amplitude_is_applied():
     signal = generate_wave("sine", 3, 0, 1, 20)
 

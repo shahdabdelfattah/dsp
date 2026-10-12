@@ -1,7 +1,31 @@
+from dataclasses import dataclass
+
 import numpy as np
 
+
+@dataclass(frozen=True)
+class ContinuousWave:
+    wave_type: str
+    amplitude: float
+    phase: float
+    frequency: float
+    duration: float
+
+    def values_at(self, times: np.ndarray) -> np.ndarray:
+        angles = 2 * np.pi * self.frequency * np.asarray(times) + self.phase
+        if self.wave_type == "sine":
+            return self.amplitude * np.sin(angles)
+        return self.amplitude * np.cos(angles)
+
+
 class DiscreteSignal:
-    def __init__(self, indices, values, name = "s"):
+    def __init__(
+        self,
+        indices,
+        values,
+        name="s",
+        continuous_wave: ContinuousWave | None = None,
+    ):
         idx = np.array(indices, dtype=float)
         val = np.array(values, dtype=float)
 
@@ -36,6 +60,7 @@ class DiscreteSignal:
         self._indices = idx
         self._values = val
         self.name = name
+        self.continuous_wave = continuous_wave
 
 
     def value_at(self, idx):

@@ -130,10 +130,15 @@ class Task2Panel(TaskPanel):
 
         try:
             signal = generate_wave(**params)
+            target_combo = (
+                self.combo_1
+                if self.combo_1.currentData() is None
+                else self.combo_2
+            )
 
             self.store.add(signal)
 
-            self._select(self.combo_1, signal)
+            self._select(target_combo, signal)
 
             self._update_plot()
 

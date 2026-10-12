@@ -62,7 +62,7 @@ class GeneratorDialog(QDialog):
         form.addRow("Phase (theta, radians):", self.theta_input)
         form.addRow("Frequency (f, Hz):", self.f_input)
         form.addRow("Sampling Frequency (FS, Hz):", self.FS_input)
-        form.addRow("Duration (seconds):", self.duration_input)
+       # form.addRow("Duration (seconds):", self.duration_input)
         form.addRow("Signal Name (optional):", self.name_input)
 
         # OK and Cancel buttons
@@ -85,6 +85,6 @@ class GeneratorDialog(QDialog):
             "theta": self.theta_input.value(),
             "f": self.f_input.value(),
             "FS": self.FS_input.value(),
-            "duration": self.duration_input.value(),
+           # "duration": self.duration_input.value(),
             "name": self.name_input.text().strip() or None,
         }

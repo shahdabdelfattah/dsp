@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from dsp.discrete_signal import DiscreteSignal
+from dsp.discrete_signal import ContinuousWave, DiscreteSignal
 
 
 def generate_wave(
@@ -67,4 +67,10 @@ def generate_wave(
     if name is None:
         name = f"{Type.capitalize()} Wave"
 
-    return DiscreteSignal(indices, values, name=name)
+    continuous_wave = ContinuousWave(Type, amplitude, theta, f, duration)
+    return DiscreteSignal(
+        indices,
+        values,
+        name=name,
+        continuous_wave=continuous_wave,
+    )
