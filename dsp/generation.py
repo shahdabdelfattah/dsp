@@ -7,26 +7,26 @@ from dsp.discrete_signal import DiscreteSignal
 def generate_wave(
     Type,
     amplitude : float,
-    theta   : float,
-    f   : float,
-    FS : float,
+    theta : float,
+    f : float,
+    FS: float,
     duration : float=1.0,
     name=None,
 ) -> DiscreteSignal:
-    """Generate a discrete sine or cosine wave."""
-
-    # # 1. Convert numeric inputs to floats
-    # amplitude = float(amplitude)
-    # theta = float(theta)
-    # f = float(f)
-    # FS = float(FS)
-    # duration = float(duration)
     
-    # 1. Check that the wave type is valid
     if Type not in ("sine", "cosine"):
-        raise ValueError("kind must be 'sine' or 'cosine'.")
+        raise ValueError(" Type must be 'sine' or 'cosine'.")
 
-    # 2. Check that all parameters are finite numbers
+
+    try:
+        amplitude = float(amplitude)
+        theta = float(theta)
+        f = float(f)
+        FS = float(FS)
+        duration = float(duration)
+    except (TypeError, ValueError, OverflowError):
+        raise ValueError("All parameters must be numbers.")
+
     if not all(np.isfinite(v) for v in (
         amplitude, theta, f, FS, duration
     )):
@@ -41,22 +41,21 @@ def generate_wave(
     if duration <= 0:
         raise ValueError("Duration must be positive.")
 
-    # 3. Check the sampling theorem
+    #  Check the sampling theorem
     if FS <= 2 * f:
         raise ValueError("Sampling frequency must be greater than 2 * frequency.")
 
-    # 4. Calculate the number of samples
+    #  Calculate the number of samples
     sample_count = round(duration * FS)
 
     if sample_count < 1:
         raise ValueError("Duration is too short to produce a sample.")
 
-    # 5. Generate the sample indices
     indices = np.arange(sample_count)
-
-    # 6. Calculate the angle for each sample
-    n = indices / FS
-    angles = (  2 * np.pi * f * n  + theta  )
+    
+    #  Calculate the time values for each sample
+    T = indices / FS
+    angles = (  2 * np.pi * f * T  + theta  )
 
     # 7. Calculate the sample values
     if Type == "sine":
@@ -64,7 +63,7 @@ def generate_wave(
     else:
         values = amplitude * np.cos(angles)
 
-    # 8. Return a DiscreteSignal
+
     if name is None:
         name = f"{Type.capitalize()} Wave"
 
