@@ -60,6 +60,40 @@ class SignalPlot(QWidget):
             markers.set_markersize(6)
             stems.set_color(color)
 
+    @staticmethod
+    def _style_axes(ax, signals) -> None:
+        """Zero line, grid, integer n ticks and y-limits that fit every signal."""
+        ax.axhline(0, color="black", linewidth=0.8)
+        ax.set_ylabel("x(n)")
+        ax.grid(True, alpha=0.3)
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        y_lo = min(min(s.values.min() for s in signals), 0.0)
+        y_hi = max(max(s.values.max() for s in signals), 0.0)
+        pad = 0.15 * (y_hi - y_lo or 1.0)
+        ax.set_ylim(y_lo - pad, y_hi + pad)
+
+    def show_quantization(self, original, quantized, error, mode: str = "discrete") -> None:
+        """Top: original and quantized overlaid. Bottom: the quantization error."""
+        if mode not in MODES:
+            raise ValueError(f"mode must be one of {MODES}, got '{mode}'")
+
+        self.figure.clear()
+        top, bottom = self.figure.subplots(2, 1, sharex=True, height_ratios=[2, 1])
+
+        self._draw_signal(top, original, OVERLAY_COLORS[0], mode, "Original")
+        self._draw_signal(top, quantized, OVERLAY_COLORS[1], mode, "Quantized")
+        self._draw_signal(bottom, error, RESULT_COLOR, mode, "Error")
+
+        self._style_axes(top, [original, quantized])
+        self._style_axes(bottom, [error])
+        top.legend(loc="upper right")
+        top.set_title("Original and quantized", loc="left", fontsize=10, fontweight="bold")
+        bottom.set_title("Quantization error", loc="left", fontsize=10, fontweight="bold")
+
+        top.set_xlim(original.start - 1, original.end + 1)
+        bottom.set_xlabel("n")
+        self.canvas.draw_idle()
+
     def draw_items(self, items: list[PlotItem], mode: str = "discrete", overlay: bool = False) -> None:
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}, got '{mode}'")
@@ -93,19 +127,11 @@ class SignalPlot(QWidget):
                     color = INPUT_COLOR
                 self._draw_signal(ax, item.signal, color, mode, item.label)
 
-            ax.axhline(0, color="black", linewidth=0.8)
-            ax.set_ylabel("x(n)")
-            ax.grid(True, alpha=0.3)
-            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            self._style_axes(ax, [i.signal for i in group])
             if overlay:
                 ax.legend(loc="upper right")
             else:
                 ax.set_title(group[0].label, loc="left", fontsize=10, fontweight="bold")
-
-            y_lo = min(min(i.signal.values.min() for i in group), 0.0)
-            y_hi = max(max(i.signal.values.max() for i in group), 0.0)
-            pad = 0.15 * (y_hi - y_lo or 1.0)
-            ax.set_ylim(y_lo - pad, y_hi + pad)
 
         all_axes = [ax for ax, _ in groups]
         all_axes[0].set_xlim(lo - 1, hi + 1)

@@ -4,4 +4,7 @@ __pycache__/
 .idea/
 .pytest_cache/
 test_discrete_signal.py
+test_quantization_display.py
 test_plot_modes.py
+test_task_tabs.py
+hsh.txt
