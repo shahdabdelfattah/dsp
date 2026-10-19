@@ -5,7 +5,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QComboBox, QFileDialog, QGroupBox, QHBoxLayout, QLabel, QMessageBox,
+    QCheckBox, QComboBox, QFileDialog, QGroupBox, QHBoxLayout, QLabel, QMessageBox,
     QPushButton, QRadioButton, QSpinBox, QSplitter, QVBoxLayout, QWidget,
 )
 
@@ -118,6 +118,14 @@ class Task3Panel(TaskPanel):
         self.radio_discrete.toggled.connect(self._on_plot_mode_changed)
         self.radio_continuous.toggled.connect(self._on_plot_mode_changed)
 
+        self.show_original = QCheckBox("Original analog signal")
+        self.show_quantized = QCheckBox("Quantized digital signal")
+        self.show_error = QCheckBox("Quantization error signal")
+        for checkbox in (self.show_original, self.show_quantized, self.show_error):
+            checkbox.setChecked(True)
+            checkbox.toggled.connect(self._on_plot_visibility_changed)
+            layout.addWidget(checkbox)
+
         self.save_button = QPushButton("Save result to file...")
         self.save_button.clicked.connect(self._on_save)
         self.save_button.setEnabled(False)
@@ -193,6 +201,9 @@ class Task3Panel(TaskPanel):
         if checked:
             self._render_result()
 
+    def _on_plot_visibility_changed(self, _checked: bool) -> None:
+        self._render_result()
+
     def _render_result(self) -> None:
         if self._last_result is None:
             signal = self.combo.currentData()
@@ -203,7 +214,13 @@ class Task3Panel(TaskPanel):
             return
         signal, result = self._last_result
         self.plot.show_quantization(
-            signal, result.quantized, result.error, mode=self.plot_mode
+            signal,
+            result.quantized,
+            result.error,
+            mode=self.plot_mode,
+            show_original=self.show_original.isChecked(),
+            show_quantized=self.show_quantized.isChecked(),
+            show_error=self.show_error.isChecked(),
         )
 
     def _quantize_selected(self) -> None:

@@ -9,6 +9,11 @@ from dsp.discrete_signal import DiscreteSignal
 INPUT_COLOR = "#1f77b4"
 RESULT_COLOR = "#d62728"
 OVERLAY_COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#9467bd"]
+QUANTIZATION_COLORS = {
+    "original": "#315f63",
+    "quantized": "#59249a",
+    "error": "#777943",
+}
 MODES = ("discrete", "continuous")
 
 
@@ -61,37 +66,74 @@ class SignalPlot(QWidget):
             stems.set_color(color)
 
     @staticmethod
-    def _style_axes(ax, signals) -> None:
+    def _style_axes(ax, signals, zero_color: str = "black", zero_linestyle: str = "-") -> None:
         """Zero line, grid, integer n ticks and y-limits that fit every signal."""
-        ax.axhline(0, color="black", linewidth=0.8)
+        ax.axhline(0, color=zero_color, linewidth=0.8, linestyle=zero_linestyle)
         ax.set_ylabel("x(n)")
         ax.grid(True, alpha=0.3)
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        y_lo = min(min(s.values.min() for s in signals), 0.0)
-        y_hi = max(max(s.values.max() for s in signals), 0.0)
+        y_lo = min((float(s.values.min()) for s in signals), default=0.0)
+        y_hi = max((float(s.values.max()) for s in signals), default=0.0)
+        y_lo = min(y_lo, 0.0)
+        y_hi = max(y_hi, 0.0)
         pad = 0.15 * (y_hi - y_lo or 1.0)
         ax.set_ylim(y_lo - pad, y_hi + pad)
 
-    def show_quantization(self, original, quantized, error, mode: str = "discrete") -> None:
-        """Top: original and quantized overlaid. Bottom: the quantization error."""
+    def show_quantization(
+        self,
+        original,
+        quantized,
+        error,
+        mode: str = "discrete",
+        *,
+        show_original: bool = True,
+        show_quantized: bool = True,
+        show_error: bool = True,
+    ) -> None:
+        """Overlay the source signal, quantized staircase, and quantization error."""
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}, got '{mode}'")
 
         self.figure.clear()
-        top, bottom = self.figure.subplots(2, 1, sharex=True, height_ratios=[2, 1])
+        ax = self.figure.subplots()
+        visible_signals = []
 
-        self._draw_signal(top, original, OVERLAY_COLORS[0], mode, "Original")
-        self._draw_signal(top, quantized, OVERLAY_COLORS[1], mode, "Quantized")
-        self._draw_signal(bottom, error, RESULT_COLOR, mode, "Error")
+        if show_original:
+            self._draw_signal(
+                ax, original, QUANTIZATION_COLORS["original"], mode, "Original analog signal"
+            )
+            visible_signals.append(original)
+        if show_quantized:
+            if mode == "continuous":
+                ax.step(
+                    quantized.indices,
+                    quantized.values,
+                    where="mid",
+                    color=QUANTIZATION_COLORS["quantized"],
+                    linewidth=2,
+                    label="Quantized digital signal",
+                )
+            else:
+                self._draw_signal(
+                    ax, quantized, QUANTIZATION_COLORS["quantized"], mode,
+                    "Quantized digital signal",
+                )
+            visible_signals.append(quantized)
+        if show_error:
+            self._draw_signal(
+                ax, error, QUANTIZATION_COLORS["error"], mode, "Quantization error signal"
+            )
+            visible_signals.append(error)
 
-        self._style_axes(top, [original, quantized])
-        self._style_axes(bottom, [error])
-        top.legend(loc="upper right")
-        top.set_title("Original and quantized", loc="left", fontsize=10, fontweight="bold")
-        bottom.set_title("Quantization error", loc="left", fontsize=10, fontweight="bold")
-
-        top.set_xlim(original.start - 1, original.end + 1)
-        bottom.set_xlabel("n")
+        self._style_axes(
+            ax, visible_signals, zero_color="#762d2d", zero_linestyle="--"
+        )
+        if visible_signals:
+            ax.legend(loc="upper right")
+        ax.set_title("Quantization", loc="left", fontsize=12, fontweight="bold")
+        ax.set_ylabel("Amplitude")
+        ax.set_xlabel("Time (sample index)")
+        ax.set_xlim(original.start - 1, original.end + 1)
         self.canvas.draw_idle()
 
     def draw_items(self, items: list[PlotItem], mode: str = "discrete", overlay: bool = False) -> None:
