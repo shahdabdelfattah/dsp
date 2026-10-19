@@ -73,5 +73,5 @@ def output_signal(signal, filepath):
     with filepath.open("w", encoding="utf-8") as file:
         file.write(f"{len(signal)}\n")
 
-        for idx, val in zip(signal.indices, signal.values.astype(int)):
+        for idx, val in zip(signal.indices, signal.values):
             file.write(f"{idx} {val}\n")
